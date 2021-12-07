@@ -7,6 +7,7 @@ use App\Models\Currency;
 use App\Models\Order;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Ramsey\Collection\Collection;
 
 class OrderController extends Controller
 {
@@ -70,30 +71,29 @@ class OrderController extends Controller
      */
     public function store(Request $request)
     {
-        if (isset($request->id)) {
-            $products_id = explode(',', $request->id);
-            $products = Product::whereIn('id', $products_id)->get();
-
-            $productsCount = array();
-            foreach (array_count_values($products_id) as $val => $c)
-                $productsCount[$val] = $c;
+        if (isset($request->products)) {
+            $products_id = collect($request->products);
+            $products = Product::whereIn('id', $products_id->map(function ($product) {
+                return $product['id'];
+            }))->get();
 
             $order = new Order;
             $currency = Currency::where('code', $request->cur ?: 'usd')->firstOrFail();;
             $order->cur = $currency->code;
 
             $price = 0;
-            $order->price = $products->map(function ($product) use ($price, $productsCount) {
-                    $price += $product->price * $productsCount[$product->id];
+            $order->price = $products->map(function ($product) use ($price) {
+                    $price += $product->price * $product->qty;
                     return $price;
                 })->sum() * $currency->course;
-            $order->products = $products->map(function ($product) use ($productsCount) {
+
+            $order->products = $products->map(function ($product) {
                 return [
                     'id' => $product->id,
                     'name' => $product->name,
                     'cur' => $product->cur,
-                    'price' => $product->price * $productsCount[$product->id],
-                    'qty' => $productsCount[$product->id]
+                    'price' => $product->price * $product->qty,
+                    'qty' => $product->qty
                 ];
             });
 
