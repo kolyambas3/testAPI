@@ -15,32 +15,35 @@ class OrderSeeder extends Seeder
     public function run()
     {
         DB::table('orders')->insert([
-            'cur' => 'usd',
-            'price' => 1400.88,
-            'products' => json_encode([
+            [
+                'cur' => 'usd',
+                'price' => 1400.88,
+                'products' => json_encode([
                     'name' => 'Samsung Galaxy S9',
                     'cur' => 'usd',
                     'qty' => '2',
                     'sum' => '1400.88'
-            ])
-        ]);
-        DB::table('orders')->insert([
-            'cur' => 'usd',
-            'price' => 3401.76,
-            'products' => json_encode(
-                [
-                    'name' => 'Samsung Galaxy S9',
-                    'cur' => 'usd',
-                    'qty' => 2,
-                    'sum' => 1400.88
-                ],
-                [
-                    'name' => 'Apple iPhone X',
-                    'cur' => 'usd',
-                    'qty' => 2,
-                    'sum' => 2000.88
-                ]
-            )
+                ])
+            ],
+            [
+                'cur' => 'usd',
+                'price' => 3401.76,
+                'products' => json_encode(
+                    [
+                        'name' => 'Samsung Galaxy S9',
+                        'cur' => 'usd',
+                        'qty' => 2,
+                        'sum' => 1400.88
+                    ],
+                    [
+                        'name' => 'Apple iPhone X',
+                        'cur' => 'usd',
+                        'qty' => 2,
+                        'sum' => 2000.88
+                    ]
+                )
+            ]
+
         ]);
     }
 }

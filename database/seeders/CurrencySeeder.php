@@ -15,16 +15,18 @@ class CurrencySeeder extends Seeder
     public function run()
     {
         DB::table('currencies')->insert([
-            'code' => 'usd',
-            'course' => 1
-        ]);
-        DB::table('currencies')->insert([
-            'code' => 'rub',
-            'course' => 1.2
-        ]);
-        DB::table('currencies')->insert([
-            'code' => 'eur',
-            'course' => 0.8
+            [
+                'code' => 'usd',
+                'course' => 1
+            ],
+            [
+                'code' => 'rub',
+                'course' => 1.2
+            ],
+            [
+                'code' => 'eur',
+                'course' => 0.8
+            ]
         ]);
     }
 }
