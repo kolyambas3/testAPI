@@ -80,8 +80,8 @@ class OrderController extends Controller
             return $product['id'];
         }))->get();
 
-        $currency = Currency::where('code', ($request->cur ?? 'usd'))->firstOrFail();;
-        $order->cur = $currency->code;
+        $currency = Currency::where('code', ($request->currency ?? 'usd'))->firstOrFail();;
+        $order->currency = $currency->code;
 
         $price = 0;
         $order->price = $products->map(function ($product) use ($products_data, $price) {
@@ -93,7 +93,7 @@ class OrderController extends Controller
             return [
                 'id' => $product->id,
                 'name' => $product->name,
-                'cur' => $product->cur,
+                'currency' => $product->currency,
                 'price' => $product->price * $products_data[$product->id]['qty'],
                 'qty' => $products_data[$product->id]['qty']
             ];

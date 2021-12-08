@@ -17,32 +17,32 @@ class ProductsSeeder extends Seeder
         DB::table('products')->insert([
             [
                 'name' => 'Samsung Galaxy S9',
-                'cur' => 'usd',
+                'currency' => 'usd',
                 'price' => 698.88
             ],
             [
                 'name' => 'Apple iPhone X',
-                'cur' => 'usd',
+                'currency' => 'usd',
                 'price' => 983.00
             ],
             [
                 'name' => 'Google Pixel 2 XL',
-                'cur' => 'usd',
+                'currency' => 'usd',
                 'price' => 675.00
             ],
             [
                 'name' => 'LG V10 H900',
-                'cur' => 'usd',
+                'currency' => 'usd',
                 'price' => 159.99
             ],
             [
                 'name' => 'Huawei Elate',
-                'cur' => 'usd',
+                'currency' => 'usd',
                 'price' => 68.00
             ],
             [
                 'name' => 'HTC One M10',
-                'cur' => 'usd',
+                'currency' => 'usd',
                 'price' => 129.99
             ]
         ]);

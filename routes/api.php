@@ -19,5 +19,5 @@ Route::middleware('auth:sanctum')->group(function (){
     Route::apiResource('orders', OrderController::class)->except('update', 'destroy');
 });
 
-Route::post('/register', [AuthController::class, 'register'])->name('register');
+Route::post('/registration', [AuthController::class, 'register'])->name('register');
 Route::post('/login', [AuthController::class, 'login'])->name('login');
