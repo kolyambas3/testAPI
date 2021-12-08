@@ -3,11 +3,10 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreOrderRequest;
 use App\Models\Currency;
 use App\Models\Order;
 use App\Models\Product;
-use Illuminate\Http\Request;
-use Ramsey\Collection\Collection;
 
 class OrderController extends Controller
 {
@@ -37,9 +36,9 @@ class OrderController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
      *
      * @param \Illuminate\Http\Request $request
+     * @param Order $order
      * @return \Illuminate\Http\JsonResponse
      *
      * @OA\Post(
@@ -51,14 +50,14 @@ class OrderController extends Controller
      *   ),
      *   @OA\Parameter(
      *      description="Parameter",
-     *      in="body",
+     *      in="path",
      *      name="id",
      *      required=true,
      *      @OA\Schema(type="integer"),
      *   ),
      *   @OA\Parameter(
      *      description="Parameter",
-     *      in="body",
+     *      in="path",
      *      name="cur",
      *      required=false,
      *      @OA\Schema(type="string"),
@@ -69,42 +68,41 @@ class OrderController extends Controller
      *   )
      * )
      */
-    public function store(Request $request)
+    public function store(StoreOrderRequest $request, Order $order)
     {
-        if (isset($request->products)) {
-            $products_id = collect($request->products);
-            $products = Product::whereIn('id', $products_id->map(function ($product) {
-                return $product['id'];
-            }))->get();
+        $products_data = collect($request->products)->mapWithKeys(function ($product) {
+            return [$product['id'] => [
+                'id' => $product['id'],
+                'qty' => isset($product['qty']) ? $product['qty'] : 1
+            ]];
+        });
+        $products = Product::whereIn('id', $products_data->map(function ($product) {
+            return $product['id'];
+        }))->get();
 
-            $order = new Order;
-            $currency = Currency::where('code', $request->cur ?: 'usd')->firstOrFail();;
-            $order->cur = $currency->code;
+        $currency = Currency::where('code', ($request->cur ?? 'usd'))->firstOrFail();;
+        $order->cur = $currency->code;
 
-            $price = 0;
-            $order->price = $products->map(function ($product) use ($price) {
-                    $price += $product->price * $product->qty;
-                    return $price;
-                })->sum() * $currency->course;
+        $price = 0;
+        $order->price = $products->map(function ($product) use ($products_data, $price) {
+                $price += $product->price * $products_data[$product->id]['qty'];
+                return $price;
+            })->sum() * $currency->course;
 
-            $order->products = $products->map(function ($product) {
-                return [
-                    'id' => $product->id,
-                    'name' => $product->name,
-                    'cur' => $product->cur,
-                    'price' => $product->price * $product->qty,
-                    'qty' => $product->qty
-                ];
-            });
+        $order->products = $products->map(function ($product) use ($products_data) {
+            return [
+                'id' => $product->id,
+                'name' => $product->name,
+                'cur' => $product->cur,
+                'price' => $product->price * $products_data[$product->id]['qty'],
+                'qty' => $products_data[$product->id]['qty']
+            ];
+        });
 
-            $order->save();
+        $order->save();
 
-            return response()->json([
-                $order
-            ]);
-        }
         return response()->json([
-            'Products not found'
+            $order
         ]);
     }
 
