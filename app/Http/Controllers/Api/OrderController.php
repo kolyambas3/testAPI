@@ -7,6 +7,7 @@ use App\Http\Requests\StoreOrderRequest;
 use App\Models\Currency;
 use App\Models\Order;
 use App\Models\Product;
+use App\Services\OrderServiceAPI;
 
 class OrderController extends Controller
 {
@@ -37,8 +38,8 @@ class OrderController extends Controller
 
     /**
      *
-     * @param \Illuminate\Http\Request $request
-     * @param Order $order
+     * @param StoreOrderRequest $request
+     * @param OrderServiceAPI $orderServiceAPI
      * @return \Illuminate\Http\JsonResponse
      *
      * @OA\Post(
@@ -68,39 +69,9 @@ class OrderController extends Controller
      *   )
      * )
      */
-    public function store(StoreOrderRequest $request, Order $order)
+    public function store(StoreOrderRequest $request, OrderServiceAPI $orderServiceAPI)
     {
-        $products_data = collect($request->products)->mapWithKeys(function ($product) {
-            return [$product['id'] => [
-                'id' => $product['id'],
-                'qty' => isset($product['qty']) ? $product['qty'] : 1
-            ]];
-        });
-        $products = Product::whereIn('id', $products_data->map(function ($product) {
-            return $product['id'];
-        }))->get();
-
-        $currency = Currency::where('code', ($request->currency ?? 'usd'))->firstOrFail();;
-        $order->currency = $currency->code;
-
-        $price = 0;
-        $order->price = $products->map(function ($product) use ($products_data, $price) {
-                $price += $product->price * $products_data[$product->id]['qty'];
-                return $price;
-            })->sum() * $currency->course;
-
-        $order->products = $products->map(function ($product) use ($products_data) {
-            return [
-                'id' => $product->id,
-                'name' => $product->name,
-                'currency' => $product->currency,
-                'price' => $product->price * $products_data[$product->id]['qty'],
-                'qty' => $products_data[$product->id]['qty']
-            ];
-        });
-
-        $order->save();
-
+        $order = $orderServiceAPI->createOrder($request);
         return response()->json([
             $order
         ]);
